@@ -1,25 +1,30 @@
----
-- name: Deploy Flask/Static App to VM
-  hosts: web
-  become: yes
-  tasks:
+name: Ansible CI/CD Deploy
 
-    - name: Pull latest code from GitHub
-      git:
-        repo: 'https://github.com/tarakantaacharya/devops-lab.git'
-        dest: /home/ubuntu/sample-app
-        version: main
-        force: yes
+on:
+  push:
+    branches:
+      - main
 
-    - name: Copy index.html to web directory
-      copy:
-        src: /home/ubuntu/sample-app/index.html
-        dest: /var/www/html/index.html
-        owner: www-data
-        group: www-data
-        mode: 0644
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
 
-    - name: Restart Apache/Nginx web server
-      service:
-        name: apache2   # change to nginx if using nginx
-        state: restarted
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Ansible
+        run: pip install ansible
+
+      - name: Run Ansible Playbook
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: deploy.yml
+          inventory: hosts.ini
+          # Optional: pass extra vars if needed
+          # extra-vars: "var1=value1 var2=value2"
