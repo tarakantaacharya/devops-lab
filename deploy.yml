@@ -3,16 +3,25 @@
   hosts: web
   become: yes
   tasks:
+
     - name: Pull latest code from GitHub
       git:
         repo: 'https://github.com/tarakantaacharya/devops-lab.git'
-        dest: /home/<your-username>/sample-app
+        dest: /home/vagrant/devops-lab/sample-app
         version: main
         force: yes
 
+    - name: Ensure web directory exists
+      file:
+        path: /var/www/html
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: 0755
+
     - name: Copy index.html to web directory
       copy:
-        src: /home/sample-app/index.html
+        src: /home/vagrant/devops-lab/sample-app/index.html
         dest: /var/www/html/index.html
         owner: www-data
         group: www-data
