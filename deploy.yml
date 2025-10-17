@@ -1,25 +1,24 @@
 ---
-- name: Deploy Flask/Static App to VM
+- name: Deploy app locally
   hosts: web
   become: yes
   tasks:
-
     - name: Pull latest code from GitHub
       git:
         repo: 'https://github.com/tarakantaacharya/devops-lab.git'
-        dest: /home/ubuntu/sample-app
+        dest: /home/<your-username>/sample-app
         version: main
         force: yes
 
     - name: Copy index.html to web directory
       copy:
-        src: /home/ubuntu/sample-app/index.html
+        src: /home/sample-app/index.html
         dest: /var/www/html/index.html
         owner: www-data
         group: www-data
         mode: 0644
 
-    - name: Restart Apache/Nginx web server
+    - name: Restart Apache web server
       service:
-        name: apache2   # change to nginx if using nginx
+        name: apache2
         state: restarted
