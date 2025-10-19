@@ -1,4 +1,4 @@
-name: Ansible CI/CD Deploy
+name: Simple CI/CD with Ansible
 
 on:
   push:
@@ -10,21 +10,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-
       - name: Install Ansible
-        run: pip install ansible
+        run: |
+          sudo apt update
+          sudo apt install -y ansible sshpass
 
-      - name: Run Ansible Playbook
-        uses: dawidd6/action-ansible-playbook@v2
-        with:
-          playbook: deploy.yml
-          inventory: hosts.ini
-          # Optional: pass extra vars if needed
-          # extra-vars: "var1=value1 var2=value2"
+      - name: Add SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VM_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          echo "${{ secrets.VM_HOST }}" > ~/.ssh/known_hosts
+
+      - name: Deploy to VM using Ansible
+        run: |
+          ansible-playbook -i hosts.ini deploy.yml \
+            --key-file ~/.ssh/id_ed25519 \
+            -u vagrant
